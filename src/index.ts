@@ -49,6 +49,7 @@ export const useSortable = <T>(
   options: UseSortableOptions
 ): [
   T[],
+  (items: T[]) => void,
   (containerNode: HTMLDivElement | null) => void,
   (node: HTMLDivElement) => void
 ] => {
@@ -64,6 +65,11 @@ export const useSortable = <T>(
   const [shouldInsertBefore, setShouldInsertBefore] = useState<boolean>(false);
   const [draggableNodes, setDraggableNodes] = useState<HTMLDivElement[]>([]);
   const [orderedItems, setOrderedItems] = useState<T[]>(items);
+
+  const setItems = useCallback((items: T[]) => {
+    // setDraggableNodes([]);
+    setOrderedItems(items);
+  }, []);
 
   const addDraggableNodeRef = useCallback((node: HTMLDivElement) => {
     if (!node) return;
@@ -219,5 +225,5 @@ export const useSortable = <T>(
     draggableNodes,
   ]);
 
-  return [orderedItems, setContainerRef, addDraggableNodeRef];
+  return [orderedItems, setItems, setContainerRef, addDraggableNodeRef];
 };

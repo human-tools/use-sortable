@@ -18,9 +18,12 @@ describe('shift', () => {
 describe('useSortable', () => {
   const items = new Array(5).fill(0).map<number>((_, i) => i);
   const App = (): JSX.Element => {
-    const [orderedItems, containerRef, addDraggableNodeRef] = useSortable<
-      number
-    >(items, {
+    const [
+      orderedItems,
+      setItems,
+      containerRef,
+      addDraggableNodeRef,
+    ] = useSortable<number>(items, {
       draggingClassNames: ['dr1', 'dr2'],
       dragoverClassNames: ['do1', 'do2'],
     });
@@ -34,6 +37,13 @@ describe('useSortable', () => {
             </div>
           ))}
         </div>
+        <button
+          onClick={() =>
+            setItems(new Array(10).fill(0).map<number>((_, i) => i))
+          }
+        >
+          Update Items
+        </button>
       </div>
     );
   };
@@ -89,5 +99,20 @@ describe('useSortable', () => {
     expect(srcEl.classList).not.toContain('dr2');
     expect(targetEl.classList).not.toContain('do1');
     expect(targetEl.classList).not.toContain('do2');
+  });
+
+  it('allows updating items', () => {
+    const { getByText } = render(<App />);
+    const btn = getByText('Update Items');
+    btn.click();
+    const srcEl = getByText('1');
+    const targetEl = getByText('8');
+    fireEvent.dragStart(srcEl);
+    fireEvent.dragEnter(targetEl, { clientX: 0, clientY: 100 });
+    fireEvent.drop(targetEl, { clientX: 0, clientY: 100 });
+    fireEvent.dragEnd(srcEl, { clientX: 0, clientY: 100 });
+    const el9 = getByText('9');
+    expect(srcEl.nextSibling).toBe(el9);
+    expect(targetEl.nextSibling).toBe(srcEl);
   });
 });
