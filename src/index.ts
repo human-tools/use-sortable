@@ -16,7 +16,7 @@ export interface UseSortableOptions {
  * @param insertBeforeTarget Wether the srcItem should be placed before or after the target index.
  * @returns The new array
  */
-const shift = <T>(
+export const shift = <T>(
   array: T[],
   srcIndex: number,
   targetIndex: number,
@@ -26,7 +26,8 @@ const shift = <T>(
     srcIndex < 0 ||
     srcIndex > array.length ||
     targetIndex < 0 ||
-    targetIndex > array.length
+    targetIndex > array.length ||
+    srcIndex === targetIndex
   )
     return array;
 
