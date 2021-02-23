@@ -1,0 +1,32 @@
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.card {
+  font-size: 56px;
+  color: #ddd;
+  background-color: white;
+  padding: 30px;
+  box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.2);
+  margin: 10px;
+  cursor: grab;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card:hover {
+  background-color: slategrey;
+}
+
+.card.dragover {
+  box-shadow: 1px 1px 15px 0 rgba(0, 128, 128, 1);
+}
+
+.card.dragging {
+  cursor: grabbing;
+  opacity: 0.2;
+}
