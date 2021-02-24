@@ -32,7 +32,7 @@ describe('useSortable', () => {
       <div>
         <div ref={containerRef}>
           {orderedItems.map(item => (
-            <div key={item} ref={addDraggableNodeRef}>
+            <div key={item} id={`id-${item}`} ref={addDraggableNodeRef}>
               {item + 1}
             </div>
           ))}
@@ -104,9 +104,16 @@ describe('useSortable', () => {
   it('allows updating items', () => {
     const { getByText } = render(<App />);
     const btn = getByText('Update Items');
+    let srcEl = getByText('1');
+    let targetEl = getByText('4');
+    fireEvent.dragStart(srcEl);
+    fireEvent.dragEnter(targetEl, { clientX: 0, clientY: 100 });
+    fireEvent.drop(targetEl, { clientX: 0, clientY: 100 });
+    fireEvent.dragEnd(srcEl, { clientX: 0, clientY: 100 });
     btn.click();
-    const srcEl = getByText('1');
-    const targetEl = getByText('8');
+    srcEl = getByText('1');
+    targetEl = getByText('8');
+    fireEvent.dragStart(srcEl);
     fireEvent.dragStart(srcEl);
     fireEvent.dragEnter(targetEl, { clientX: 0, clientY: 100 });
     fireEvent.drop(targetEl, { clientX: 0, clientY: 100 });

@@ -67,14 +67,17 @@ export const useSortable = <T>(
   const [orderedItems, setOrderedItems] = useState<T[]>(items);
 
   const setItems = useCallback((items: T[]) => {
-    // setDraggableNodes([]);
+    setDraggableNodes([]);
     setOrderedItems(items);
   }, []);
 
-  const addDraggableNodeRef = useCallback((node: HTMLDivElement) => {
-    if (!node) return;
-    setDraggableNodes(nodes => [...nodes, node]);
-  }, []);
+  const addDraggableNodeRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (!node) return;
+      setDraggableNodes(nodes => [...nodes, node]);
+    },
+    [orderedItems]
+  );
 
   const findItemIndexFromNode = useCallback(
     (node: HTMLDivElement) =>
