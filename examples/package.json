@@ -7,7 +7,7 @@
     "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\""
   },
   "dependencies": {
-    "@human-tools/use-sortable": "^0.0.3",
+    "@human-tools/use-sortable": "^0.0.4",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
