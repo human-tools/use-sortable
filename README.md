@@ -19,7 +19,7 @@ const App = (): JSX.Element => {
   const [items] = useState<number[]>(
     new Array(30).fill(0).map<number>((_, i) => i)
   );
-  const [orderedItems, containerRef, addDraggableNodeRef] = useSortable<number>(
+  const [orderedItems, setItems, setContainerRef, addDraggableNodeRef] = useSortable<number>(
     items,
     {
       multiple: true,
@@ -28,7 +28,7 @@ const App = (): JSX.Element => {
 
   return (
     <div>
-      <div className="card-container" ref={containerRef}>
+      <div className="card-container" ref={setContainerRef}>
         {orderedItems.map(item => (
           <div className="card" key={item} ref={addDraggableNodeRef}>
             {item + 1}
