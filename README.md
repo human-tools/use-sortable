@@ -7,12 +7,20 @@ Simple implementation that allows you to reorder items easily using useSortable 
 - [Optional] draggingClassNames: string[]Default: ['dragging']]
 - [Optional] dragoverClassNames: string[]Default: ['dragover']]
 
+## Installing
+
+```sh
+yarn add @human-tools/use-sortable
+# OR
+npm install @human-tools/use-sortable
+```
+
 ## Example
 
 ```jsx
 import { useState } from 'react';
 import * as ReactDOM from 'react-dom';
-import { useSortable } from '../.';
+import { useSortable } from '@human-tools/use-sortable';
 import './index.css';
 
 const App = (): JSX.Element => {
@@ -76,6 +84,25 @@ ReactDOM.render(<App />, document.getElementById('root'));
   opacity: 0.2;
 }
 ```
+
+## Contributing
+
+The package uses `@pika/pack` to build and publish the library. The `example` directory is a small `snowpack` react app.
+
+If you want to work on the src of the library while using the example as a scratchpad to see your changes, run:
+
+- `yarn start` in the root directory - This will watch the `src/` and copy the files to `example/src/use-sortable-lib` directory
+- `yarn start` in the `example` directory - This will start the normal `snowpack dev` server and watch example files and hmr appropriately.
+
+This setup is mainly because `snowpack` still doesn't have a good support for `yarn/npm link`'d packages.
+
+## Deploying Updated Example Site
+
+This will happen automatically using `Netlify`, all you need to do is merge updated files in.
+
+## Publishing new version of `@human-tools/use-sortable`
+
+Currently one of the maintainers have to run `npx pika publish` and follow the prompts. This will probably eventually be automated anytime `master` branch is updated.
 
 ## License
 
