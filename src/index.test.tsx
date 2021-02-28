@@ -18,19 +18,19 @@ describe('shift', () => {
 describe('useSortable', () => {
   const items = new Array(5).fill(0).map<number>((_, i) => i);
   const App = (): JSX.Element => {
-    const [
+    const {
       orderedItems,
       setItems,
-      containerRef,
+      setContainerRef,
       addDraggableNodeRef,
-    ] = useSortable<number>(items, {
+    } = useSortable<number>(items, {
       draggingClassNames: ['dr1', 'dr2'],
       dragoverClassNames: ['do1', 'do2'],
     });
 
     return (
       <div>
-        <div ref={containerRef}>
+        <div ref={setContainerRef}>
           {orderedItems.map(item => (
             <div key={item} id={`id-${item}`} ref={addDraggableNodeRef}>
               {item + 1}
@@ -80,6 +80,7 @@ describe('useSortable', () => {
     const targetEl = getByText('4');
     fireEvent.dragStart(srcEl);
     fireEvent.dragEnter(targetEl, { clientX: 0, clientY: 100 });
+    fireEvent.dragOver(targetEl, { clientX: 0, clientY: 100 });
     fireEvent.drop(targetEl, { clientX: 0, clientY: 100 });
     fireEvent.dragEnd(srcEl, { clientX: 0, clientY: 100 });
     const el5 = getByText('5');
@@ -93,6 +94,7 @@ describe('useSortable', () => {
     const targetEl = getByText('4');
     fireEvent.dragStart(srcEl);
     fireEvent.dragEnter(targetEl, { clientX: 0, clientY: 100 });
+    fireEvent.dragOver(targetEl, { clientX: 0, clientY: 100 });
     fireEvent.drop(targetEl, { clientX: 0, clientY: 100 });
     fireEvent.dragEnd(srcEl, { clientX: 0, clientY: 100 });
     expect(srcEl.classList).not.toContain('dr1');
@@ -108,6 +110,7 @@ describe('useSortable', () => {
     let targetEl = getByText('4');
     fireEvent.dragStart(srcEl);
     fireEvent.dragEnter(targetEl, { clientX: 0, clientY: 100 });
+    fireEvent.dragOver(targetEl, { clientX: 0, clientY: 100 });
     fireEvent.drop(targetEl, { clientX: 0, clientY: 100 });
     fireEvent.dragEnd(srcEl, { clientX: 0, clientY: 100 });
     btn.click();
@@ -116,6 +119,7 @@ describe('useSortable', () => {
     fireEvent.dragStart(srcEl);
     fireEvent.dragStart(srcEl);
     fireEvent.dragEnter(targetEl, { clientX: 0, clientY: 100 });
+    fireEvent.dragOver(targetEl, { clientX: 0, clientY: 100 });
     fireEvent.drop(targetEl, { clientX: 0, clientY: 100 });
     fireEvent.dragEnd(srcEl, { clientX: 0, clientY: 100 });
     const el9 = getByText('9');

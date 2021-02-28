@@ -12,20 +12,28 @@ const App = (): JSX.Element => {
   const [items] = useState<number[]>(
     new Array(30).fill(0).map<number>((_, i) => i)
   );
-  const [
+  const {
     orderedItems,
     setItems,
     setContainerRef,
     addDraggableNodeRef,
-  ] = useSortable<number>(items, {
-    multiple: true,
+  } = useSortable<number>(items, {
+    animate: true,
+    animationDelayFunction: (index: number) => index * 0.03,
+    animationDurationFunction: (index: number) => 0.2 + index * 0.02,
+    animationTimingFunction: () => 'cubic-bezier(0, 1.28, 1, 1)',
   });
 
   return (
     <div>
       <div className="card-container" ref={setContainerRef}>
         {orderedItems.map((item: number) => (
-          <div className="card" key={item} ref={addDraggableNodeRef}>
+          <div
+            className="card"
+            key={item}
+            ref={addDraggableNodeRef}
+            id={`debug-id-${item + 1}`}
+          >
             {item + 1}
           </div>
         ))}

@@ -1,6 +1,10 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 
 export interface UseSortableOptions {
+  animate?: boolean;
+  animationDelayFunction?: (index: number) => number;
+  animationDurationFunction?: (index: number) => number;
+  animationTimingFunction?: (index: number) => string;
   multiple?: boolean;
   draggingClassNames?: string[];
   dragoverClassNames?: string[];
@@ -44,21 +48,32 @@ export const shift = <T>(
   return newArr;
 };
 
+/**
+ * TODO: Allow user to cancel a reorder while dragging an element
+ * by hitting ESC.
+ */
 export const useSortable = <T>(
   items: T[],
   options: UseSortableOptions
-): [
-  T[],
-  (items: T[]) => void,
-  (containerNode: HTMLDivElement | null) => void,
-  (node: HTMLDivElement) => void
-] => {
-  const settings = {
-    multiple: false,
-    draggingClassNames: ['dragging'],
-    dragoverClassNames: ['dragover'],
-    ...options,
-  };
+): {
+  orderedItems: T[];
+  setItems: (items: T[]) => void;
+  setContainerRef: (containerNode: HTMLDivElement | null) => void;
+  addDraggableNodeRef: (node: HTMLDivElement) => void;
+} => {
+  const settings = useMemo(
+    () => ({
+      multiple: false,
+      animate: true,
+      animationDelayFunction: (): number => 0,
+      animationDurationFunction: (): number => 0.3,
+      animationTimingFunction: (): string => 'cubic-bezier(0, 1.28, 1, 1)',
+      draggingClassNames: ['dragging'],
+      dragoverClassNames: ['dragover'],
+      ...options,
+    }),
+    [options]
+  );
 
   const [draggedItemIndex, setDraggedItemIndex] = useState<number>();
   const [dropTargetIndex, setDropTargetIndex] = useState<number>();
@@ -66,8 +81,16 @@ export const useSortable = <T>(
   const [draggableNodes, setDraggableNodes] = useState<HTMLDivElement[]>([]);
   const [orderedItems, setOrderedItems] = useState<T[]>(items);
 
+  // FIXME: originalRects need to update when the layout updates or resize.
+  // Need a ResizingObserver on the container ref probably.
+  const [originalRects, setOriginalRects] = useState<DOMRect[]>([]);
+  const [isUpdatingRects, setIsUpdatingRects] = useState<boolean>(false);
+
   const setItems = useCallback((items: T[]) => {
     setDraggableNodes([]);
+    setOriginalRects([]);
+    setDropTargetIndex(undefined);
+    setDraggedItemIndex(undefined);
     setOrderedItems(items);
   }, []);
 
@@ -75,6 +98,7 @@ export const useSortable = <T>(
     (node: HTMLDivElement) => {
       if (!node) return;
       setDraggableNodes(nodes => [...nodes, node]);
+      setOriginalRects(rects => [...rects, node.getBoundingClientRect()]);
     },
     [orderedItems]
   );
@@ -90,17 +114,88 @@ export const useSortable = <T>(
       const el = e.target as HTMLDivElement;
       if (!el) return;
       el.classList.add(...settings.draggingClassNames);
-      setDraggedItemIndex(findItemIndexFromNode(el));
+      const draggedIndex = findItemIndexFromNode(el);
+      setDraggedItemIndex(draggedIndex);
       setDropTargetIndex(undefined);
       setShouldInsertBefore(false);
     },
     [findItemIndexFromNode, setDraggedItemIndex, settings.draggingClassNames]
   );
 
-  const onDragOver = useCallback((e: DragEvent) => {
-    e.preventDefault();
-    return false;
-  }, []);
+  const updateTransforms = useCallback(
+    (srcIdx: number, targetIdx: number) => {
+      setIsUpdatingRects(true);
+      const newItemRects = shift(
+        originalRects,
+        srcIdx,
+        targetIdx,
+        shouldInsertBefore
+      );
+      const newDraggableNodes = shift(
+        draggableNodes,
+        srcIdx,
+        targetIdx,
+        shouldInsertBefore
+      );
+      newDraggableNodes.forEach((node, index) => {
+        const oldRect = originalRects[index];
+        const newRect = newItemRects[index];
+        const sign = -1;
+        const translateX = sign * (newRect.x - oldRect.x);
+        const translateY = sign * (newRect.y - oldRect.y);
+        node.style.transition = `transform ${settings.animationDurationFunction(
+          index
+        )}s ${settings.animationDelayFunction(
+          index
+        )}s ${settings.animationTimingFunction(index)}`;
+        node.style.transform = `translate(${translateX}px, ${translateY}px)`;
+      });
+      setIsUpdatingRects(false);
+    },
+    [
+      shouldInsertBefore,
+      originalRects,
+      draggableNodes,
+      setIsUpdatingRects,
+      settings.animationDelayFunction,
+      settings.animationDurationFunction,
+      settings.animationTimingFunction,
+    ]
+  );
+
+  const onDragOver = useCallback(
+    (e: DragEvent) => {
+      e.preventDefault();
+      const el = e.target as HTMLDivElement;
+      if (!el || draggedItemIndex === undefined) return;
+      const srcIdx = draggedItemIndex;
+      const targetIdx = findItemIndexFromNode(el);
+      const draggedNode = draggableNodes[draggedItemIndex];
+      if (targetIdx === -1) {
+        return;
+      }
+      if (draggedNode === el || srcIdx === targetIdx) {
+        return;
+      }
+
+      if (!isUpdatingRects) {
+        settings.animate && updateTransforms(srcIdx, targetIdx);
+        setDropTargetIndex(targetIdx);
+        setShouldInsertBefore(srcIdx > targetIdx);
+      }
+      return false;
+    },
+    [
+      draggedItemIndex,
+      draggableNodes,
+      findItemIndexFromNode,
+      updateTransforms,
+      isUpdatingRects,
+      setDropTargetIndex,
+      setShouldInsertBefore,
+      settings.animate,
+    ]
+  );
 
   const onDragEnter = useCallback(
     (e: DragEvent) => {
@@ -129,21 +224,10 @@ export const useSortable = <T>(
       e.preventDefault();
       const el = e.target as HTMLDivElement;
       if (!el) return;
-      setDropTargetIndex(findItemIndexFromNode(el));
-      const { x, width, height, y } = el.getBoundingClientRect();
-      const { clientX, clientY } = e;
-      setShouldInsertBefore(
-        clientX < x + width / 2 || clientY < y + height / 2
-      );
       el.classList.remove(...settings.dragoverClassNames);
       return false;
     },
-    [
-      setDropTargetIndex,
-      findItemIndexFromNode,
-      setShouldInsertBefore,
-      settings.dragoverClassNames,
-    ]
+    [settings.dragoverClassNames]
   );
 
   const onDragEnd = useCallback(
@@ -154,7 +238,12 @@ export const useSortable = <T>(
       el.classList.remove(...settings.draggingClassNames);
       if (draggedItemIndex === undefined || dropTargetIndex === undefined)
         return;
-      setOrderedItems(
+      settings.animate &&
+        draggableNodes.forEach(node => {
+          node.style.transition = '';
+          node.style.transform = '';
+        });
+      setItems(
         shift(
           orderedItems,
           draggedItemIndex,
@@ -175,7 +264,7 @@ export const useSortable = <T>(
     [
       draggedItemIndex,
       dropTargetIndex,
-      setOrderedItems,
+      setItems,
       orderedItems,
       setDraggableNodes,
       draggableNodes,
@@ -228,5 +317,5 @@ export const useSortable = <T>(
     draggableNodes,
   ]);
 
-  return [orderedItems, setItems, setContainerRef, addDraggableNodeRef];
+  return { orderedItems, setItems, setContainerRef, addDraggableNodeRef };
 };

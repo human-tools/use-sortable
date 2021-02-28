@@ -4,8 +4,12 @@ Simple implementation that allows you to reorder items easily using useSortable 
 
 ## Options
 
-- [Optional] draggingClassNames: string[]Default: ['dragging']]
-- [Optional] dragoverClassNames: string[]Default: ['dragover']]
+- [Optional] `draggingClassNames`: `string[]` - Default: `['dragging']`
+- [Optional] `dragoverClassNames`: `string[]` - Default: `['dragover']`
+- [Optional] `animate`: `boolean` - Default: `true`
+- [Optional] `animationDelayFunction`: `(index: number) => number` - Default: `() => 0`
+- [Optional] `animationDurationFunction`: `(index: number) => number` - Default: `() => 0.3`
+- [Optional] `animationTimingFunction`: `(index: number) => string` - Default: `() => 'cubic-bezier(0, 1.28, 1, 1)'`
 
 ## Installing
 
@@ -27,11 +31,9 @@ const App = (): JSX.Element => {
   const [items] = useState<number[]>(
     new Array(30).fill(0).map<number>((_, i) => i)
   );
-  const [orderedItems, setItems, setContainerRef, addDraggableNodeRef] = useSortable<number>(
+  const { orderedItems, setItems, setContainerRef, addDraggableNodeRef } = useSortable<number>(
     items,
-    {
-      multiple: true,
-    }
+    {}
   );
 
   return (
