@@ -1,6 +1,6 @@
 {
   "name": "@human-tools/use-sortable",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Simple implementation that allows you to reorder items easily using useSortable hook.",
   "homepage": "https://github.com/human-toos/use-sortable",
   "repository": "https://github.com/human-toos/use-sortable",
