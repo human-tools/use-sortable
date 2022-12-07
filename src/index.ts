@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export interface UseSortableOptions {
   animate?: boolean;
@@ -140,6 +140,7 @@ export const useSortable = <T>(
       newDraggableNodes.forEach((node, index) => {
         const oldRect = originalRects[index];
         const newRect = newItemRects[index];
+        console.log({ newRect, oldRect, newItemRects });
         const sign = -1;
         const translateX = sign * (newRect.x - oldRect.x);
         const translateY = sign * (newRect.y - oldRect.y);
